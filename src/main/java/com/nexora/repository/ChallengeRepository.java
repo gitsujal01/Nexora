@@ -1,4 +1,4 @@
-package com.nexora.backend.repository;
+package com.nexora.repository;
 
 import com.nexora.entities.Challenge;
 import com.nexora.repository.*;
