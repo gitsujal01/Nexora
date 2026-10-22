@@ -3,10 +3,14 @@ package com.nexora.repository;
 import java.util.Optional;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.stereotype.Repository;
 
 import com.nexora.entities.User;
 
+@Repository
+public interface userRepository extends MongoRepository<User, String> {
 
-public interface userRepository extends MongoRepository<User,String>{
-	Optional<User> findByEmail(String email);
+    Optional<User> findByEmail(String email);
+
+    boolean existsByEmail(String email);
 }
