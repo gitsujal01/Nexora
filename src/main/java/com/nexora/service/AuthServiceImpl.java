@@ -2,6 +2,7 @@ package com.nexora.service;
 
 import java.util.Optional;
 import java.util.Map;
+import java.util.Locale;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -29,22 +30,30 @@ public class AuthServiceImpl implements AuthService {
         this.jwtService = jwtService;
     }
 
+    // REGISTER
     @Override
     public User register(RegisterRequest request) {
 
+        // Normalize email
+        String email = request.getEmail()
+                .trim()
+                .toLowerCase(Locale.ROOT);
+
+        // Check existing user
         Optional<User> existingUser =
-                userrepo.findByEmail(request.getEmail());
+                userrepo.findByEmail(email);
 
         if (existingUser.isPresent()) {
             throw new RuntimeException("Email already registered");
         }
 
+        // Create user
         User user = new User();
 
-        user.setEmail(request.getEmail());
-        user.setFullname(request.getFullname());
+        user.setEmail(email);
+        user.setFullname(request.getFullname().trim());
 
-        // Store encoded password
+        // Encrypt password using BCrypt
         user.setPassword(
                 passwordEncoder.encode(request.getPassword())
         );
@@ -52,11 +61,18 @@ public class AuthServiceImpl implements AuthService {
         return userrepo.save(user);
     }
 
+    // LOGIN
     @Override
     public Map<String, Object> Login(LoginRequest request) {
 
+        // Normalize email
+        String email = request.getEmail()
+                .trim()
+                .toLowerCase(Locale.ROOT);
+
+        // Find user
         Optional<User> optionalUser =
-                userrepo.findByEmail(request.getEmail());
+                userrepo.findByEmail(email);
 
         if (optionalUser.isEmpty()) {
             throw new RuntimeException("Invalid email or password");
@@ -64,7 +80,7 @@ public class AuthServiceImpl implements AuthService {
 
         User user = optionalUser.get();
 
-        // Compare entered password with encoded password
+        // Verify password
         if (!passwordEncoder.matches(
                 request.getPassword(),
                 user.getPassword())) {
@@ -72,7 +88,7 @@ public class AuthServiceImpl implements AuthService {
             throw new RuntimeException("Invalid email or password");
         }
 
-        // Generate JWT token
+        // Generate JWT
         String token = jwtService.generateToken(user.getEmail());
 
         return Map.of(

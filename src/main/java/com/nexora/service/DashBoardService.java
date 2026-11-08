@@ -8,6 +8,7 @@ import com.nexora.repository.ChallengeRepository;
 import com.nexora.repository.StudyScheduleRepository;
 import com.nexora.repository.UserProgressRepository;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -30,6 +31,7 @@ public class DashBoardService {
         this.progressRepository = progressRepository;
     }
 
+    @Cacheable(value = "dashboard",key="#userId")
     public DashBoardResponse getDashboard(String userId) {
 
         UserProgress progress = progressRepository
